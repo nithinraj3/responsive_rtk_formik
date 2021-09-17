@@ -22,21 +22,20 @@ const RadioForm = ({ name, ...otherProps }) => {
   };
 
   return (
-    <div style={{ marginBottom: "30px" }}>
+    <>
       <FormControl fullWidth component="fieldset">
         <FormLabel component="legend">Gender</FormLabel>
         <RadioGroup {...configRadio}>
-          <FormControlLabel value="female" control={<Radio />} label="Female" />
-          <FormControlLabel value="male" control={<Radio />} label="Male" />
+          <FormControlLabel value="Female" control={<Radio />} label="Female" />
+          <FormControlLabel value="Male" control={<Radio />} label="Male" />
         </RadioGroup>
+        {meta.error && (
+          <FormHelperText style={{ color: "red", margin: " -20px 10px 20px" }}>
+            {meta.error}
+          </FormHelperText>
+        )}
       </FormControl>
-
-      {meta.error && (
-        <FormHelperText style={{ color: "red", marginLeft: "10px" }}>
-          Please select a gender
-        </FormHelperText>
-      )}
-    </div>
+    </>
   );
 };
 

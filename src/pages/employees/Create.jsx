@@ -5,10 +5,7 @@ import {
   Grid,
   Button,
   Paper,
-  Avatar,
 } from "@material-ui/core";
-
-import PersonAddIcon from "@material-ui/icons/PersonAdd";
 
 import { useHistory } from "react-router-dom";
 import { Formik, Form } from "formik";
@@ -18,67 +15,51 @@ import RadioGender from "../../component/FormUI/RadioGender";
 import Select from "../../component/FormUI/Select";
 import FileInput from "../../component/FormUI/FileField";
 import DateTime from "../../component/FormUI/DateTimePicker";
-import { useCreateEmployeeMutation } from "../../redux/usersApi";
+import {
+  useCreateEmployeeMutation,
+  useGetDesignationsQuery,
+} from "../../redux/usersApi";
 import { toast } from "react-toastify";
 import AddressCheckboxField from "../../component/FormUI/AddressCheckboxField";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 
 const useStyles = makeStyles((theme) => ({
   main_container: {
-    margin: theme.spacing(12, 5, 5),
-    padding: theme.spacing(3),
+    margin: theme.spacing(12, 2),
+    padding: theme.spacing(0, 3),
   },
   wrapper: {
     display: "flex",
-    justifyContent: "center",
     alignItems: "center",
-    marginBottom: theme.spacing(3),
+    margin: theme.spacing(0, -3),
     padding: theme.spacing(3),
-  },
-  avatar: {
-    backgroundColor: theme.palette.secondary.main,
-    marginRight: theme.spacing(2),
   },
   text_field: {
     marginBottom: theme.spacing(4),
   },
-  date_container: {
-    marginTop: theme.spacing(-2),
-    marginBottom: theme.spacing(2),
-  },
-  date_field: {
-    marginBottom: theme.spacing(2),
+  gender: {
+    marginBottom: theme.spacing(3),
   },
   button_container: {
-    marginLeft: theme.spacing(-1),
+    margin: theme.spacing(-1, 0, 3, -1),
   },
   mobile_container: {
-    margin: theme.spacing(15, 2, 0),
-    padding: theme.spacing(1),
+    margin: theme.spacing(15, 2),
+    padding: theme.spacing(3),
   },
   mobile_wrapper: {
     display: "flex",
-    flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center",
-    margin: theme.spacing(2, 0, 2),
-  },
-  mobile_avatar: {
-    backgroundColor: theme.palette.secondary.main,
-    marginBottom: theme.spacing(1),
+    margin: theme.spacing(2, -2, 3),
   },
   mobile_text_field: {
     marginBottom: theme.spacing(3),
   },
-  mobile_date_container: {
-    marginTop: theme.spacing(-2),
-    marginBottom: theme.spacing(2),
-  },
-  mobile_date_field: {
-    marginTop: theme.spacing(2),
-  },
   mobile_gender: {
-    marginBottom: theme.spacing(-2),
+    marginBottom: theme.spacing(3),
+  },
+  mobile_button_container: {
+    margin: theme.spacing(0, 0, 1, -1),
   },
 }));
 
@@ -90,7 +71,7 @@ const INITIAL_FORM_STATE = {
   email: "",
   join_date: null,
   date_of_birth: null,
-  status: null,
+  status: "",
   gender: null,
   profile_picture: null,
   resume: null,
@@ -100,29 +81,32 @@ const INITIAL_FORM_STATE = {
   designation_id: null,
 };
 const FORM_VALIDATION = Yup.object().shape({
-  first_name: Yup.string().required("Required"),
-  last_name: Yup.string().required("Required"),
-  email: Yup.string().email().required("Required"),
-  present_address: Yup.string().required("Required"),
-  gender: Yup.string().required("Required"),
-  permanent_address: Yup.string().required("Required"),
-  mobile: Yup.number().required("Required"),
-  landline: Yup.number(),
-  join_date: Yup.date().nullable().required("Required"),
-  date_of_birth: Yup.date().nullable().required("Required"),
-  designation_id: Yup.string().required("Required"),
-  status: Yup.string().required("Required"),
-  profile_picture: Yup.mixed().required("File Required"),
-  resume: Yup.mixed().required("File Required"),
+  first_name: Yup.string().required("First name required"),
+  last_name: Yup.string().required("Last name required"),
+  email: Yup.string().email().required("Email required"),
+  mobile: Yup.number().required("Mobile number required"),
+  landline: Yup.number().nullable(),
+  gender: Yup.string().nullable().required("Please select a gender"),
+  present_address: Yup.string().required("Present Address required"),
+  permanent_address: Yup.string().required("Permanent Address required"),
+  join_date: Yup.date().nullable().required("Joining Date required"),
+  date_of_birth: Yup.date().nullable().required("Date of birth required"),
+  designation_id: Yup.string().nullable().required("Designation required"),
+  status: Yup.string().required("Status required"),
+  profile_picture: Yup.mixed().required("Profile picture required"),
+  resume: Yup.mixed().required("Resume file required"),
 });
 
-const AddEmployee = () => {
+const Create = () => {
   const history = useHistory();
   const classes = useStyles();
 
   const [createEmployee] = useCreateEmployeeMutation();
+  const { data } = useGetDesignationsQuery();
 
-  const createEmployeeHandler = (values) => {
+  const designationId = data.data;
+
+  const createEmployeeHandler = async (values) => {
     const formData = new FormData();
     formData.append("first_name", values.first_name);
     formData.append("last_name", values.last_name);
@@ -149,33 +133,31 @@ const AddEmployee = () => {
     );
     formData.append("resume", values.resume, values.resume?.name);
 
-    createEmployee(formData)
-      .then((payload) => {
+    console.log(formData);
+    try {
+      await createEmployee(formData).then((res) => {
         toast.success("Successfully added...", {
           position: "top-center",
           autoClose: 1000,
         });
 
         history.push("/employees");
-      })
-      .catch((error) => {
-        toast.error(error.message, {
-          position: "top-center",
-          autoClose: 1000,
-        });
       });
+    } catch (err) {
+      toast.error(err.message, {
+        position: "top-center",
+        autoClose: 1000,
+      });
+    }
   };
 
-  const createEmployeeMatches = useMediaQuery("(min-width:640px)");
+  const isDesktop = useMediaQuery("(min-width:640px)");
 
   return (
     <>
-      {createEmployeeMatches ? (
+      {isDesktop ? (
         <Paper className={classes.main_container}>
           <Container className={classes.wrapper}>
-            <Avatar className={classes.avatar}>
-              <PersonAddIcon />
-            </Avatar>
             <Typography component="h1" variant="h6">
               Create Employee
             </Typography>
@@ -188,8 +170,8 @@ const AddEmployee = () => {
             onSubmit={(values) => createEmployeeHandler(values)}
           >
             <Form autoComplete="off">
-              <Grid container spacing={10}>
-                <Grid item xs={6}>
+              <Grid container>
+                <Grid item xs={12}>
                   <TextField
                     className={classes.text_field}
                     name="first_name"
@@ -199,7 +181,7 @@ const AddEmployee = () => {
                     className={classes.text_field}
                     name="last_name"
                     label="Last Name"
-                  />
+                  />{" "}
                   <TextField
                     className={classes.text_field}
                     name="email"
@@ -215,71 +197,50 @@ const AddEmployee = () => {
                     name="landline"
                     label="Landline"
                   />
-                  <div className={classes.date_container}>
-                    <DateTime
-                      className={classes.date_field}
-                      fullWidth="true"
-                      name="join_date"
-                      label="Joing Date"
-                    />
-                    <DateTime
-                      className={classes.date_field}
-                      fullWidth="true"
-                      name="date_of_birth"
-                      label="Date of Birth"
-                    />
-                  </div>
+                  <DateTime
+                    className={classes.text_field}
+                    name="join_date"
+                    label="Joining Date"
+                  />
+                  <DateTime
+                    className={classes.text_field}
+                    name="date_of_birth"
+                    label="Date of Birth"
+                  />
                   <Select
                     className={classes.text_field}
                     name="designation_id"
-                    label="designation"
-                    options={[
-                      { id: 1, title: "React Developer" },
-                      { id: 2, title: "Java Developer" },
-                      { id: 3, title: "PHP Developer" },
-                    ]}
+                    label="Designation"
+                    options={designationId}
                   />
                   <Select
                     className={classes.text_field}
                     label="Status"
                     name="status"
                     options={[
-                      { id: "1", title: "Temporary" },
-                      { id: "2", title: "Part Time" },
-                      { id: "3", title: "Permanent" },
+                      { id: "1", name: "Temporary" },
+                      { id: "2", name: "Trainee" },
+                      { id: "3", name: "Permanent" },
                     ]}
                   />
-
-                  <div>
-                    <Grid
-                      container
-                      spacing={2}
-                      className={classes.button_container}
-                    >
-                      <Grid item>
-                        <Button
-                          type="submit"
-                          color="primary"
-                          variant="contained"
-                        >
-                          Submit
-                        </Button>
-                      </Grid>
-                      <Grid item>
-                        <Button
-                          color="secondary"
-                          variant="outlined"
-                          component="label"
-                          onClick={() => history.push("/employees")}
-                        >
-                          Cancel
-                        </Button>
-                      </Grid>
-                    </Grid>
+                  <RadioGender className={classes.gender} row name="gender" />
+                  <TextField
+                    className={classes.text_field}
+                    name="present_address"
+                    label="Present Address"
+                    multiline
+                    rows={3}
+                  />
+                  <div style={{ marginBottom: "1.5rem" }}>
+                    <AddressCheckboxField />
                   </div>
-                </Grid>
-                <Grid item xs={6}>
-                  <RadioGender row name="gender" />
+                  <TextField
+                    className={classes.text_field}
+                    name="permanent_address"
+                    label="Permenent Address"
+                    multiline
+                    rows={3}
+                  />
                   <FileInput
                     className={classes.text_field}
                     name="profile_picture"
@@ -290,24 +251,27 @@ const AddEmployee = () => {
                     name="resume"
                     label="Resume"
                   />
-                  <TextField
-                    className={classes.text_field}
-                    name="present_address"
-                    label="Present Address"
-                    multiline
-                    rows={3}
-                  />
-
-                  <div style={{ marginBottom: "8px" }}>
-                    <AddressCheckboxField />
-                  </div>
-                  <TextField
-                    className={classes.text_field}
-                    name="permanent_address"
-                    label="Permenent Address"
-                    multiline
-                    rows={3}
-                  />
+                  <Grid
+                    container
+                    spacing={2}
+                    className={classes.button_container}
+                  >
+                    <Grid item>
+                      <Button type="submit" color="primary" variant="contained">
+                        Submit
+                      </Button>
+                    </Grid>
+                    <Grid item>
+                      <Button
+                        color="secondary"
+                        variant="outlined"
+                        component="label"
+                        onClick={() => history.push("/employees")}
+                      >
+                        Cancel
+                      </Button>
+                    </Grid>
+                  </Grid>
                 </Grid>
               </Grid>
             </Form>
@@ -316,14 +280,7 @@ const AddEmployee = () => {
       ) : (
         <Paper className={classes.mobile_container}>
           <Container className={classes.mobile_wrapper}>
-            <Avatar className={classes.mobile_avatar}>
-              <PersonAddIcon />
-            </Avatar>
-            <Typography
-              style={{ fontSize: "20px" }}
-              component="h1"
-              variant="h6"
-            >
+            <Typography component="h1" variant="h6">
               Create Employee
             </Typography>
           </Container>
@@ -362,44 +319,54 @@ const AddEmployee = () => {
                     name="landline"
                     label="Landline"
                   />
-                  <div className={classes.mobile_date_container}>
-                    <DateTime
-                      className={classes.mobile_date_field}
-                      fullWidth="true"
-                      name="join_date"
-                      label="Join Date"
-                    />
-                    <DateTime
-                      className={classes.mobile_date_field}
-                      fullWidth="true"
-                      name="date_of_birth"
-                      label="Date of Birth"
-                    />
-                  </div>
+                  <DateTime
+                    className={classes.mobile_text_field}
+                    name="join_date"
+                    label="Joining Date"
+                  />
+                  <DateTime
+                    className={classes.mobile_text_field}
+                    name="date_of_birth"
+                    label="Date of Birth"
+                  />
                   <Select
                     className={classes.mobile_text_field}
                     name="designation_id"
-                    label="designation"
-                    options={[
-                      { id: 1, title: "React Developer" },
-                      { id: 2, title: "Java Developer" },
-                      { id: 3, title: "PHP Developer" },
-                    ]}
+                    label="Designation"
+                    options={designationId}
                   />
                   <Select
                     className={classes.mobile_text_field}
                     label="Status"
                     name="status"
                     options={[
-                      { id: "1", title: "Temporary" },
-                      { id: "2", title: "Part Time" },
-                      { id: "3", title: "Permanent" },
+                      { id: "1", name: "Temporary" },
+                      { id: "2", name: "Trainee" },
+                      { id: "3", name: "Permanent" },
                     ]}
                   />
                   <RadioGender
                     row
                     name="gender"
                     className={classes.mobile_gender}
+                  />
+
+                  <TextField
+                    className={classes.mobile_text_field}
+                    name="present_address"
+                    label="Present Address"
+                    multiline
+                    rows={3}
+                  />
+                  <div style={{ marginBottom: "1.5rem" }}>
+                    <AddressCheckboxField />
+                  </div>
+                  <TextField
+                    className={classes.mobile_text_field}
+                    name="permanent_address"
+                    label="Permenent Address"
+                    multiline
+                    rows={3}
                   />
                   <FileInput
                     className={classes.mobile_text_field}
@@ -411,28 +378,10 @@ const AddEmployee = () => {
                     name="resume"
                     label="Resume"
                   />
-                  <TextField
-                    className={classes.mobile_text_field}
-                    name="present_address"
-                    label="Present Address"
-                    multiline
-                    rows={3}
-                  />
-
-                  <div style={{ marginBottom: "8px" }}>
-                    <AddressCheckboxField />
-                  </div>
-                  <TextField
-                    className={classes.mobile_text_field}
-                    name="permanent_address"
-                    label="Permenent Address"
-                    multiline
-                    rows={3}
-                  />
                   <Grid
                     container
                     spacing={2}
-                    className={classes.button_container}
+                    className={classes.mobile_button_container}
                   >
                     <Grid item>
                       <Button type="submit" color="primary" variant="contained">
@@ -460,4 +409,4 @@ const AddEmployee = () => {
   );
 };
 
-export default AddEmployee;
+export default Create;

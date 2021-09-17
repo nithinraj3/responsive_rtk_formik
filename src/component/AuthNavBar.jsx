@@ -21,6 +21,7 @@ const useStyles = makeStyles((theme) => ({
   },
   menu: {
     display: "flex",
+    alignSelf: "flex-end",
   },
   title: {
     marginLeft: theme.spacing(3),

@@ -48,6 +48,9 @@ const useStyles = makeStyles((theme) => ({
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
+  spinner: {
+    marginLeft: theme.spacing(20),
+  },
 }));
 
 const formReducer = (state, action) => {
@@ -123,8 +126,8 @@ const Register = (props) => {
   const placeSubmitHandler = async (event) => {
     event.preventDefault();
 
-    register(registerDetails)
-      .then((payload) => {
+    try {
+      await register(registerDetails).then((payload) => {
         toast.success("Successfully logged...", {
           position: "top-center",
           autoClose: 1000,
@@ -136,13 +139,13 @@ const Register = (props) => {
           "loginUser",
           JSON.stringify(payload.data.data.access_token)
         );
-      })
-      .catch((error) => {
-        toast.error("Check your connection or Something went wrong", {
-          position: "top-center",
-          autoClose: 1000,
-        });
       });
+    } catch (err) {
+      toast.error("Check your connection or Something went wrong", {
+        position: "top-center",
+        autoClose: 1000,
+      });
+    }
   };
 
   return (
@@ -233,13 +236,6 @@ const Register = (props) => {
                       onInput={inputHandler}
                     />
                   </Grid>
-                  {isLoading && (
-                    <>
-                      <Grid item xs={12}>
-                        <LoadingSpinners />
-                      </Grid>
-                    </>
-                  )}
                 </Grid>
                 <Button
                   type="submit"
@@ -248,8 +244,9 @@ const Register = (props) => {
                   color="primary"
                   className={classes.submit}
                   disabled={!formState.isValid}
+                  startIcon={isLoading && <LoadingSpinners />}
                 >
-                  Register
+                  {!isLoading && <Typography>Login</Typography>}
                 </Button>
               </form>
             </div>

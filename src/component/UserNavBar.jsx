@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -9,28 +9,26 @@ import Menu from "@material-ui/core/Menu";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import { toast } from "react-toastify";
 import { NavLink } from "react-router-dom";
-import styled from "styled-components";
-import { Grid, useMediaQuery } from "@material-ui/core";
+import {
+  Avatar,
+  Box,
+  Button,
+  ButtonGroup,
+  Divider,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemIcon,
+  ListItemText,
+  Tooltip,
+} from "@material-ui/core";
+import PersonIcon from "@material-ui/icons/Person";
+import SettingsIcon from "@material-ui/icons/Settings";
+import LockIcon from "@material-ui/icons/Lock";
 
 const useStyles = makeStyles((theme) => ({
-  grow: {
-    flexGrow: 1,
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
-  title: {
-    display: "none",
-    [theme.breakpoints.up("sm")]: {
-      display: "block",
-    },
-  },
-  menu: {
-    marginLeft: theme.spacing(5),
-  },
-  titlee: {
+  profile_container: {
     marginLeft: theme.spacing(0),
-    color: "#fff",
   },
   mobile_container: {
     margin: theme.spacing(0),
@@ -51,37 +49,15 @@ const useStyles = makeStyles((theme) => ({
   icons: {
     color: theme.palette.primary.paper,
   },
-  demo1: {
-    backgroundColor: theme.palette.background.paper,
+  purple: {
+    backgroundColor: theme.palette.primary.main,
   },
 }));
-
-const List = styled.ul`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  list-style: none;
-  margin-left: 15px;
-  height: 100%;
-`;
-
-const ListItem = styled.li`
-  font-size: 16px;
-  margin-left: 25px;
-  height: 100%;
-`;
-
-const activeStyle = {
-  color: "cyan",
-  fontWeight: "bold",
-};
 
 export default function UserNavBar(props) {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const isMenuOpen = Boolean(anchorEl);
-
-  const userNavbarMatches = useMediaQuery("(min-width:640px)");
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -118,115 +94,92 @@ export default function UserNavBar(props) {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleLogout}>Logout</MenuItem>
+      <List className={classes.profile_container}>
+        <ListItem>
+          <ListItemAvatar>
+            <Avatar className={classes.purple}>N</Avatar>
+          </ListItemAvatar>
+          <ListItemText primary="Nithin Raj" secondary="nithin@gmail.com" />
+        </ListItem>
+      </List>
+      <Divider />
+      <MenuItem>
+        <ListItemIcon>
+          <PersonIcon />
+        </ListItemIcon>
+        <Typography variant="inherit">My Account</Typography>
+      </MenuItem>
+      <MenuItem>
+        <ListItemIcon>
+          <SettingsIcon />
+        </ListItemIcon>
+        <Typography variant="inherit">Settings</Typography>
+      </MenuItem>
+      <MenuItem onClick={handleLogout}>
+        <ListItemIcon>
+          <LockIcon />
+        </ListItemIcon>
+        <Typography variant="inherit">Logout</Typography>
+      </MenuItem>
     </Menu>
   );
 
+  const [clickLink, setClickLink] = useState(false);
+
+  const linkHandler = (event) => {
+    setClickLink(true);
+  };
+  console.log(clickLink);
+
   return (
     <>
-      {userNavbarMatches ? (
-        <div className={classes.grow}>
-          <AppBar position="fixed">
-            <Toolbar>
-              <Typography variant="h6" className={classes.logo}>
-                ADMIN TEMPLATE
-              </Typography>
-              <List>
-                <ListItem>
-                  <NavLink
-                    exact
-                    to="/"
-                    className="link"
-                    activeStyle={activeStyle}
-                  >
-                    Home
-                  </NavLink>
-                </ListItem>
-                <ListItem>
-                  <NavLink
-                    className="link"
-                    exact
-                    to="/employees"
-                    activeStyle={activeStyle}
-                  >
-                    Employees
-                  </NavLink>
-                </ListItem>
-                <ListItem>
-                  <NavLink
-                    className="link"
-                    exact
-                    to="/designations"
-                    activeStyle={activeStyle}
-                  >
-                    Designations
-                  </NavLink>
-                </ListItem>
-              </List>
-              <div className={classes.grow} />
-              <div>
-                <IconButton
-                  className={classes.icons}
-                  edge="end"
-                  aria-label="account of current user"
-                  aria-controls={menuId}
-                  aria-haspopup="true"
-                  onClick={handleProfileMenuOpen}
-                  color="inherit"
-                >
-                  <AccountCircle />
-                </IconButton>
-              </div>
-            </Toolbar>
-          </AppBar>
-        </div>
-      ) : (
-        <AppBar position="fixed" className={classes.mobile_container}>
-          <Toolbar>
-            <Grid container>
-              <Grid item xs={12} className={classes.header1}>
-                <Typography variant="h6">ADMIN TEMPLATE</Typography>
-                <IconButton
-                  className={classes.icons}
-                  edge="end"
-                  aria-label="account of current user"
-                  aria-controls={menuId}
-                  aria-haspopup="true"
-                  onClick={handleProfileMenuOpen}
-                >
-                  <AccountCircle />
-                </IconButton>
-              </Grid>
-              <Grid item xs={12} className={classes.header2}>
-                <NavLink
-                  exact
-                  to="/"
-                  className="link"
-                  activeStyle={activeStyle}
-                >
-                  <Typography>Home</Typography>
-                </NavLink>
-                <NavLink
-                  exact
-                  to="/employees"
-                  className="link"
-                  activeStyle={activeStyle}
-                >
-                  <Typography>Employees</Typography>
-                </NavLink>
-                <NavLink
-                  exact
-                  to="/designations"
-                  className="link"
-                  activeStyle={activeStyle}
-                >
-                  <Typography>Designations</Typography>
-                </NavLink>
-              </Grid>
-            </Grid>
-          </Toolbar>
-        </AppBar>
-      )}
+      <AppBar position="fixed">
+        <Toolbar>
+          <Typography variant="h6">Admin Template</Typography>
+          <Box flexGrow={1}></Box>
+          <ButtonGroup>
+            <Button
+              onClick={linkHandler}
+              component={NavLink}
+              to="/"
+              variant={clickLink ? "contained" : "text"}
+            >
+              <Typography variant="body1">Home</Typography>
+            </Button>
+            <Button
+              onClick={linkHandler}
+              component={NavLink}
+              to="/employees"
+              variant="text"
+              color="inherit"
+            >
+              <Typography variant="body1">Employees</Typography>
+            </Button>
+            <Button
+              onClick={linkHandler}
+              component={NavLink}
+              to="/designations"
+              variant="text"
+              color="inherit"
+            >
+              <Typography variant="body1">Designations</Typography>
+            </Button>
+          </ButtonGroup>
+          <IconButton
+            className={classes.icons}
+            edge="end"
+            aria-label="account of current user"
+            aria-controls={menuId}
+            aria-haspopup="true"
+            onClick={handleProfileMenuOpen}
+            color="inherit"
+          >
+            <Tooltip title="Nithin Raj" interactive>
+              <AccountCircle />
+            </Tooltip>
+          </IconButton>
+        </Toolbar>
+      </AppBar>
       {renderMenu}
     </>
   );

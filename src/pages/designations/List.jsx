@@ -9,7 +9,6 @@ import { GridToolbarContainer } from "@mui/x-data-grid-pro";
 import { createTheme } from "@material-ui/core/styles";
 import { makeStyles } from "@material-ui/styles";
 import {
-  Avatar,
   Grid,
   LinearProgress,
   Paper,
@@ -24,7 +23,7 @@ import {
   useDeleteDesignationMutation,
   useGetDesignationsQuery,
 } from "../../redux/usersApi";
-import AddBoxIcon from "@material-ui/icons/AddBox";
+import AddCircleOutlineRoundedIcon from "@material-ui/icons/AddCircleOutlineRounded";
 
 const defaultTheme = createTheme();
 
@@ -35,8 +34,8 @@ const useStyles = makeStyles(
       alignItems: "center",
       justifyContent: "center",
       flexDirection: "column",
-      margin: theme.spacing(12, 0, 3),
-      padding: theme.spacing(3, 4),
+      margin: theme.spacing(12, 2),
+      padding: theme.spacing(3),
     },
     wrapper: {
       marginBottom: theme.spacing(3),
@@ -47,23 +46,22 @@ const useStyles = makeStyles(
     grid_items_right: {
       marginRight: theme.spacing(0),
     },
-    avatar: {
-      backgroundColor: theme.palette.secondary.main,
-      marginRight: theme.spacing(2),
-    },
     mobile_container: {
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      margin: theme.spacing(15, 0, 3),
-      padding: theme.spacing(1),
+      margin: theme.spacing(15, 2),
+      padding: theme.spacing(3),
     },
     mobile_title_wrapper: {
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
       margin: theme.spacing(1, 0, 2),
+    },
+    mobile_create_button: {
+      marginRight: theme.spacing(0),
     },
   }),
   { defaultTheme }
@@ -91,22 +89,22 @@ function RowMenuCell(props) {
     history.push(`/designations/${id}/edit`);
   };
 
-  const handleDelete = (id) => {
-    deleteDesignations(id)
-      .then((res) => {
+  const handleDelete = async (id) => {
+    try {
+      await deleteDesignations(id).then((res) => {
         toast.success("Successfully deleted...", {
           position: "top-center",
           autoClose: 1000,
         });
 
         history.push(`/designations`);
-      })
-      .catch((error) => {
-        toast.error(error.message, {
-          position: "top-center",
-          autoClose: 1000,
-        });
       });
+    } catch (err) {
+      toast.error(err.message, {
+        position: "top-center",
+        autoClose: 1000,
+      });
+    }
   };
 
   return (
@@ -137,7 +135,7 @@ RowMenuCell.propTypes = {
   id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
 };
 
-export default function Designations() {
+export default function List() {
   const classes = useStyles();
   const { data, isLoading } = useGetDesignationsQuery();
   const [pageSize, setPageSize] = useState(5);
@@ -151,19 +149,49 @@ export default function Designations() {
       })) ||
     [];
 
-  const listDesignationMatches = useMediaQuery("(min-width:640px)");
-  const columns = [
+  const isDesktop = useMediaQuery("(min-width:640px)");
+
+  const desktopColumn = [
+    {
+      field: "keys",
+      align: "right",
+      headerAlign: "right",
+      headerName: "Sl No",
+      flex: 0.7,
+    },
+    {
+      field: "name",
+      headerName: "Designation name",
+      flex: 5,
+
+      align: "left",
+      headerAlign: "center",
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      renderCell: RowMenuCell,
+      sortable: false,
+      flex: 1,
+      headerAlign: "center",
+      filterable: false,
+      align: "center",
+      disableColumnMenu: true,
+      disableReorder: true,
+    },
+  ];
+  const mobileColumn = [
     {
       field: "keys",
       align: "center",
       headerAlign: "center",
       headerName: "Sl No",
-      flex: listDesignationMatches ? 1 : 0.8,
+      width: 150,
     },
     {
       field: "name",
       headerName: "Designation name",
-      flex: listDesignationMatches ? 4 : 1,
+      width: 250,
       align: "center",
       headerAlign: "center",
     },
@@ -172,7 +200,7 @@ export default function Designations() {
       headerName: "Actions",
       renderCell: RowMenuCell,
       sortable: false,
-      flex: listDesignationMatches ? 1 : 0.7,
+      width: 150,
       headerAlign: "center",
       filterable: false,
       align: "center",
@@ -180,10 +208,11 @@ export default function Designations() {
       disableReorder: true,
     },
   ];
+  const columns = isDesktop ? desktopColumn : mobileColumn;
 
   return (
     <>
-      {listDesignationMatches ? (
+      {isDesktop ? (
         <Paper className={classes.main_container}>
           <Grid
             container
@@ -193,7 +222,7 @@ export default function Designations() {
           >
             <Grid item className={classes.grid_items_left}>
               <Typography variant="h6" component="h1">
-                Designations List
+                Designations
               </Typography>
             </Grid>
             <Grid item className={classes.grid_items_right}>
@@ -205,7 +234,7 @@ export default function Designations() {
                   activeClassName="active"
                 >
                   <Button
-                    variant="contained"
+                    variant="outlined"
                     color="secondary"
                     className={classes.button}
                     startIcon={<AddIcon />}
@@ -219,6 +248,7 @@ export default function Designations() {
           <div style={{ width: "100%" }}>
             <DataGrid
               autoHeight
+              hideFooterSelectedRowCount
               rows={rows}
               columns={columns}
               pageSize={pageSize}
@@ -236,7 +266,7 @@ export default function Designations() {
           <Grid container className={classes.mobile_title_wrapper}>
             <Grid item>
               <Typography variant="h6" component="h1">
-                Designations List
+                Designations
               </Typography>
             </Grid>
             <Grid item>
@@ -251,9 +281,13 @@ export default function Designations() {
                   }}
                   activeClassName="active"
                 >
-                  <Avatar className={classes.avatar}>
-                    <AddBoxIcon />
-                  </Avatar>
+                  <Button
+                    color="secondary"
+                    variant="outlined"
+                    className={classes.mobile_create_button}
+                  >
+                    <AddCircleOutlineRoundedIcon />
+                  </Button>
                 </NavLink>
               </GridToolbarContainer>
             </Grid>
@@ -265,6 +299,7 @@ export default function Designations() {
               rows={rows}
               columns={columns}
               autoPageSize
+              hideFooterSelectedRowCount
               pageSize={pageSize}
               onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
               rowsPerPageOptions={[5, 10, 20]}

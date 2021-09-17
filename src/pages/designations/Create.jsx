@@ -2,7 +2,6 @@ import React from "react";
 import {
   Container,
   makeStyles,
-  Avatar,
   Typography,
   Grid,
   Button,
@@ -16,18 +15,16 @@ import { useHistory } from "react-router-dom";
 import { useCreateDesignationMutation } from "../../redux/usersApi";
 import { toast } from "react-toastify";
 import TextField from "../../component/FormUI/Textfield";
-import AddBoxIcon from "@material-ui/icons/AddBox";
 
 const useStyles = makeStyles((theme) => ({
   main_container: {
-    margin: theme.spacing(12),
-    padding: theme.spacing(3),
+    margin: theme.spacing(12, 2),
+    padding: theme.spacing(0, 3, 3),
   },
   wrapper: {
     display: "flex",
-    justifyContent: "center",
     alignItems: "center",
-    marginBottom: theme.spacing(3),
+    margin: theme.spacing(0, -3),
     padding: theme.spacing(3),
   },
   avatar: {
@@ -38,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
   },
   submit: {
-    margin: theme.spacing(2, 2, 0, 0),
+    margin: theme.spacing(3, 2, 0, 0),
   },
   mobile_container: {
     margin: theme.spacing(15, 2),
@@ -46,10 +43,8 @@ const useStyles = makeStyles((theme) => ({
   },
   mobile_wrapper: {
     display: "flex",
-    flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center",
-    margin: theme.spacing(2, 0, 4),
+    margin: theme.spacing(2, -2, 3),
   },
   mobile_avatar: {
     backgroundColor: theme.palette.secondary.main,
@@ -62,7 +57,7 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
   },
 }));
-const AddDesignation = () => {
+const Create = () => {
   const classes = useStyles();
   const history = useHistory();
 
@@ -72,50 +67,39 @@ const AddDesignation = () => {
 
   const [createDesignation] = useCreateDesignationMutation();
 
-  const createDesignationHandler = (values) => {
+  const createDesignationHandler = async (values) => {
     const list = { designation_name: values.designation_name };
-    createDesignation(list)
-      .then((payload) => {
+
+    try {
+      await createDesignation(list).then((payload) => {
         toast.success("Successfully added...", {
           position: "top-center",
           autoClose: 1000,
         });
 
         history.push("/designations");
-      })
-      .catch((error) => {
-        toast.error(error.message, {
-          position: "top-center",
-          autoClose: 1000,
-        });
       });
+    } catch (err) {
+      toast.error(err.message, {
+        position: "top-center",
+        autoClose: 1000,
+      });
+    }
   };
 
-  const createDesignationMatches = useMediaQuery("(min-width:640px)");
+  const isDesktop = useMediaQuery("(min-width:640px)");
 
   return (
     <>
       <Paper
         className={
-          createDesignationMatches
-            ? classes.main_container
-            : classes.mobile_container
+          isDesktop ? classes.main_container : classes.mobile_container
         }
       >
         <Container
-          className={
-            createDesignationMatches ? classes.wrapper : classes.mobile_wrapper
-          }
+          className={isDesktop ? classes.wrapper : classes.mobile_wrapper}
         >
-          <Avatar
-            className={
-              createDesignationMatches ? classes.avatar : classes.mobile_avatar
-            }
-          >
-            <AddBoxIcon />
-          </Avatar>
-
-          {createDesignationMatches ? (
+          {isDesktop ? (
             <Typography component="h1" variant="h6">
               Create Designation
             </Typography>
@@ -179,4 +163,4 @@ const AddDesignation = () => {
   );
 };
 
-export default AddDesignation;
+export default Create;

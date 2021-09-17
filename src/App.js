@@ -17,7 +17,7 @@ import { useState } from "react";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#333996",
+      main: "#482880",
       light: "#3c44b126",
       paper: "#fff",
       black: "#000",
@@ -110,7 +110,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <Header user={isLogged} logout={logout} />
-      <Switch>{routes}</Switch>
+      {routes}
       <CssBaseline />
     </ThemeProvider>
   );

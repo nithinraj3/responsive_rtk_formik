@@ -20,10 +20,10 @@ const DateTimePicker = ({ name, label, ...otherProps }) => {
     ...otherProps,
     onChange: handleChange,
     label,
+    fullWidth: true,
     variant: "inline",
     inputVariant: "outlined",
     format: "dd/MM/yyyy",
-    margin: "normal",
     KeyboardButtonProps: {
       "aria-label": "change date",
     },

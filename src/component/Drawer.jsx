@@ -6,8 +6,10 @@ import Divider from "@material-ui/core/Divider";
 import ListItem from "@material-ui/core/ListItem";
 import {
   AppBar,
-  Container,
+  Avatar,
   IconButton,
+  ListItemAvatar,
+  ListItemText,
   Menu,
   MenuItem,
   Toolbar,
@@ -15,7 +17,6 @@ import {
 } from "@material-ui/core";
 import { NavLink } from "react-router-dom";
 import MenuIcon from "@material-ui/icons/Menu";
-import AccountCircle from "@material-ui/icons/AccountCircle";
 import { toast } from "react-toastify";
 import WorkIcon from "@material-ui/icons/Work";
 import PeopleIcon from "@material-ui/icons/People";
@@ -44,11 +45,8 @@ const useStyles = makeStyles((theme) => ({
   },
   drawer_container: {
     backgroundColor: theme.palette.primary.paper,
+    margin: theme.spacing(2),
     height: theme.spacing(110),
-  },
-  drawer_title: {
-    backgroundColor: theme.palette.primary.main,
-    padding: theme.spacing(1.5),
   },
   title: {
     color: theme.palette.primary.paper,
@@ -58,8 +56,11 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: theme.palette.primary.light,
     },
   },
-  list_values: {
+  link_text: {
     marginLeft: theme.spacing(1),
+  },
+  purple: {
+    backgroundColor: theme.palette.primary.main,
   },
 }));
 
@@ -139,18 +140,20 @@ export default function Drawer(props) {
       onClick={toggleDrawer(anchor, false)}
       onKeyDown={toggleDrawer(anchor, false)}
     >
-      <Container className={classes.drawer_title}>
-        <Typography variant="h6" component="h1" className={classes.title}>
-          ADMIN TEMPLATE
-        </Typography>
-      </Container>
-
-      <Divider />
+      <List>
+        <ListItem>
+          <ListItemAvatar>
+            <Avatar className={classes.purple}>N</Avatar>
+          </ListItemAvatar>
+          <ListItemText primary="Nithin Raj" secondary="nithin@gmail.com" />
+        </ListItem>
+      </List>
+      <Divider variant="fullwidth" />
       <List>
         <NavLink className="drawer_link" exact activeStyle={activeStyle} to="/">
           <ListItem button className={classes.list_item}>
             <HomeIcon />
-            <Typography className={classes.list_values}>HOME</Typography>
+            <Typography className={classes.link_text}>HOME</Typography>
           </ListItem>
         </NavLink>
         <NavLink
@@ -161,7 +164,7 @@ export default function Drawer(props) {
         >
           <ListItem button className={classes.list_item}>
             <PeopleIcon />
-            <Typography className={classes.list_values}>EMPLOYEES</Typography>
+            <Typography className={classes.link_text}>EMPLOYEES</Typography>
           </ListItem>
         </NavLink>
         <NavLink
@@ -172,12 +175,11 @@ export default function Drawer(props) {
         >
           <ListItem button className={classes.list_item}>
             <WorkIcon />
-            <Typography className={classes.list_values}>
-              DESIGNATIONS
-            </Typography>
+            <Typography className={classes.link_text}>DESIGNATIONS</Typography>
           </ListItem>
         </NavLink>
       </List>
+      <Divider variant="fullwidth" />
     </div>
   );
 
@@ -205,12 +207,12 @@ export default function Drawer(props) {
 
         <div className={classes.title_container}>
           <Toolbar>
-            <Typography variant="h6" component="h1">
+            <Typography variant="body1" component="h3">
               ADMIN TEMPLATE
             </Typography>
           </Toolbar>
         </div>
-        <IconButton
+        {/* <IconButton
           className={classes.icons}
           edge="end"
           aria-label="account of current user"
@@ -219,7 +221,7 @@ export default function Drawer(props) {
           onClick={handleProfileMenuOpen}
         >
           <AccountCircle />
-        </IconButton>
+        </IconButton> */}
       </AppBar>
       {renderMenu}
     </>

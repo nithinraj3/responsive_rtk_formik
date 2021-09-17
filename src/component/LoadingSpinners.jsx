@@ -16,7 +16,7 @@ export default function LoadingSpinners() {
 
   return (
     <div className={classes.root}>
-      <CircularProgress />
+      <CircularProgress color="inherit" />
     </div>
   );
 }

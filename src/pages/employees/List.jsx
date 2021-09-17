@@ -1,11 +1,6 @@
 import * as React from "react";
 import { DataGrid, GridOverlay } from "@mui/x-data-grid";
-import {
-  Avatar,
-  IconButton,
-  LinearProgress,
-  makeStyles,
-} from "@material-ui/core";
+import { IconButton, LinearProgress, makeStyles } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/DeleteOutlined";
 import { Paper } from "@material-ui/core";
@@ -17,6 +12,7 @@ import { NavLink, useHistory } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   useDeleteEmployeeMutation,
+  useGetDesignationsQuery,
   useGetEmployeesQuery,
 } from "../../redux/usersApi";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
@@ -28,8 +24,8 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "column",
-    margin: theme.spacing(12, 0, 3),
-    padding: theme.spacing(3, 4),
+    margin: theme.spacing(12, 2),
+    padding: theme.spacing(3),
   },
   title_wrapper: {
     marginBottom: theme.spacing(3),
@@ -49,14 +45,17 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    margin: theme.spacing(15, 0, 3),
-    padding: theme.spacing(1),
+    margin: theme.spacing(15, 2),
+    padding: theme.spacing(3),
   },
   mobile_title_wrapper: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    margin: theme.spacing(1, 0, 2),
+    margin: theme.spacing(2, 0, 2),
+  },
+  mobile_create_button: {
+    marginRight: theme.spacing(0),
   },
 }));
 
@@ -81,22 +80,22 @@ function RowMenuCell(props) {
     history.push(`/employees/${id}/edit`);
   };
 
-  const handleDelete = (id) => {
-    deleteEmployees(id)
-      .then((res) => {
+  const handleDelete = async (id) => {
+    try {
+      await deleteEmployees(id).then((res) => {
         toast.success("Successfully deleted...", {
           position: "top-center",
           autoClose: 1000,
         });
 
         history.push(`/employees`);
-      })
-      .catch((error) => {
-        toast.error(error.message, {
-          position: "top-center",
-          autoClose: 1000,
-        });
       });
+    } catch (err) {
+      toast.error(err.message, {
+        position: "top-center",
+        autoClose: 1000,
+      });
+    }
   };
 
   return (
@@ -122,24 +121,38 @@ function RowMenuCell(props) {
   );
 }
 
-export default function Employees() {
+export default function List() {
   const classes = useStyles();
 
-  const { data, isLoading } = useGetEmployeesQuery();
-
   const [pageSize, setPageSize] = React.useState(5);
+  const { data, isLoading } = useGetEmployeesQuery();
+  const { data: dsgnData, isSuccess, isError } = useGetDesignationsQuery();
 
   let employeeData = data;
+  let designationData;
 
-  function deignation(id) {
-    if (id === 1) {
-      return "React Developer";
-    } else if (id === 2) {
-      return "Java Developer";
-    } else if (id === 3) {
-      return "PHP Developer";
-    }
+  if (isSuccess) {
+    designationData = dsgnData.data;
   }
+
+  if (isError) {
+    designationData = [];
+    toast.error("Data not Loaded successfully", {
+      position: "top-center",
+      autoClose: 1000,
+    });
+  }
+
+  let designationName;
+  function designation(dsgnId) {
+    for (const dsgn of designationData) {
+      if (dsgn.id === dsgnId) {
+        designationName = dsgn.name;
+      }
+    }
+    return designationName;
+  }
+
   let rows =
     (data &&
       employeeData.data.map((item, index) => {
@@ -149,7 +162,7 @@ export default function Employees() {
           id: item.id,
           date_of_birth: new Date(item.date_of_birth).toLocaleDateString(),
           join_date: new Date(item.join_date).toLocaleDateString(),
-          designation_id: deignation(item.designation_id),
+          designation_id: designation(item.designation_id),
         };
       })) ||
     [];
@@ -157,7 +170,7 @@ export default function Employees() {
   const columns = [
     {
       field: "keys",
-      headerAlign: "center",
+      headerAlign: "right",
       headerName: "Sl No",
       // flex: 1,
       width: 120,
@@ -168,16 +181,16 @@ export default function Employees() {
       headerName: "First Name",
       // flex: 1,
       width: 150,
-      align: "center",
-      headerAlign: "center",
+      align: "left",
+      headerAlign: "left",
     },
     {
       field: "last_name",
       headerName: "Last Name",
       // flex: 1,
       width: 150,
-      align: "center",
-      headerAlign: "center",
+      align: "left",
+      headerAlign: "left",
     },
     {
       field: "join_date",
@@ -185,8 +198,8 @@ export default function Employees() {
       // flex: 1,
       width: 150,
       type: "date",
-      align: "center",
-      headerAlign: "center",
+      align: "left",
+      headerAlign: "left",
     },
     {
       field: "date_of_birth",
@@ -194,48 +207,48 @@ export default function Employees() {
       // flex: 1,
       width: 180,
       type: "date",
-      align: "center",
-      headerAlign: "center",
+      align: "left",
+      headerAlign: "left",
     },
     {
       field: "gender",
       headerName: "Gender",
       // flex: 1,
       width: 150,
-      align: "center",
-      headerAlign: "center",
+      align: "left",
+      headerAlign: "left",
     },
     {
       field: "designation_id",
       headerName: "Designation",
       // flex: 1,
       width: 180,
-      align: "center",
-      headerAlign: "center",
+      align: "left",
+      headerAlign: "left",
     },
     {
       field: "email",
       headerName: "Email",
-      headerAlign: "center",
+      headerAlign: "left",
       // flex: 1,
       width: 200,
-      align: "center",
+      align: "left",
     },
     {
       field: "profile_picture",
       headerName: "Profile Picture",
       // flex: 1,
       width: 180,
-      align: "center",
-      headerAlign: "center",
+      align: "left",
+      headerAlign: "left",
     },
     {
       field: "resume",
       headerName: "Resume",
       // flex: 1,
       width: 150,
-      align: "center",
-      headerAlign: "center",
+      align: "left",
+      headerAlign: "left",
     },
     {
       field: "actions",
@@ -252,34 +265,30 @@ export default function Employees() {
     },
   ];
 
-  const listEmployeesListMatches = useMediaQuery("(min-width:640px)");
+  const isDesktop = useMediaQuery("(min-width:640px)");
 
   return (
     <>
       <Paper
         className={
-          listEmployeesListMatches
-            ? classes.main_container
-            : classes.mobile_container
+          isDesktop ? classes.main_container : classes.mobile_container
         }
       >
         <Grid
           container
           className={
-            listEmployeesListMatches
-              ? classes.title_wrapper
-              : classes.mobile_title_wrapper
+            isDesktop ? classes.title_wrapper : classes.mobile_title_wrapper
           }
           alignItems="center"
           justifyContent="space-between"
         >
           <Grid item className={classes.grid_items_left}>
             <Typography variant="h6" component="h1">
-              Employees List
+              Employees
             </Typography>
           </Grid>
           <Grid item className={classes.grid_items_right}>
-            {listEmployeesListMatches ? (
+            {isDesktop ? (
               <NavLink
                 to="/employees/create"
                 className="link"
@@ -287,7 +296,7 @@ export default function Employees() {
                 activeClassName="active"
               >
                 <Button
-                  variant="contained"
+                  variant="outlined"
                   color="secondary"
                   className={classes.button}
                   startIcon={<AddIcon />}
@@ -306,46 +315,32 @@ export default function Employees() {
                 }}
                 activeClassName="active"
               >
-                <Avatar className={classes.avatar}>
+                <Button
+                  color="secondary"
+                  variant="outlined"
+                  className={classes.mobile_create_button}
+                >
                   <PersonAddIcon />
-                </Avatar>
+                </Button>
               </NavLink>
             )}
           </Grid>
         </Grid>
         <div style={{ width: "100%" }}>
-          {listEmployeesListMatches ? (
-            <DataGrid
-              autoHeight
-              editMode="row"
-              rows={rows}
-              columns={columns}
-              autoPageSize
-              hideFooterSelectedRowCount
-              pageSize={pageSize}
-              onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-              rowsPerPageOptions={[5, 10, 20]}
-              components={{
-                LoadingOverlay: CustomLoadingOverlay,
-              }}
-              loading={isLoading}
-            />
-          ) : (
-            <DataGrid
-              autoHeight
-              editMode="row"
-              hideFooterSelectedRowCount
-              rows={rows}
-              columns={columns}
-              pageSize={pageSize}
-              onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-              rowsPerPageOptions={[5, 10, 20]}
-              components={{
-                LoadingOverlay: CustomLoadingOverlay,
-              }}
-              loading={isLoading}
-            />
-          )}
+          <DataGrid
+            autoHeight
+            rows={rows}
+            columns={columns}
+            autoPageSize
+            hideFooterSelectedRowCount
+            pageSize={pageSize}
+            onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+            rowsPerPageOptions={[5, 10, 20]}
+            components={{
+              LoadingOverlay: CustomLoadingOverlay,
+            }}
+            loading={isLoading}
+          />
         </div>
       </Paper>
     </>
